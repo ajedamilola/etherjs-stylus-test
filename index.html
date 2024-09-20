@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<span>Counter:</span>
+<h2>
+    <span id="count"></span>
+</h2>
+<br />
+<button id="increment">Increment</button>
+<button id="update">Update Counter</button>
+<button id="decrement">Decrement</button>
+<br />
+<input type="number" placeholder="Set" id="text">
+<button id="save">Save</button>
+<div id="status">Not Connected</div>
+
+<body>
+    <script type="module">
+        import { ethers } from "https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.0/ethers.min.js";
+        let contract = null;
+        const ui = {
+            status: document.querySelector("#status"),
+            count: document.querySelector("#count"),
+            increment: document.querySelector("#increment"),
+            decrement: document.querySelector("#decrement"),
+            save: document.querySelector("#save"),
+            text: document.querySelector("#text"),
+            update: document.querySelector("#update")
+
+        }
+
+        async function Update() {
+            ui.status.innerHTML = "Connected";
+            try {
+                const number = await contract.number()
+                ui.count.innerHTML = Number(number);
+            } catch (error) {
+                ui.status.innerHTML = "Please try again"
+            }
+        }
+
+        async function Init() {
+            ui.status.innerHTML = "Metamask Not detected"
+            if (window.ethereum) {
+                ui.status.innerHTML = "Not Connected"
+                try {
+                    ui.status.innerHTML = "Connected";
+                    let provider = new ethers.BrowserProvider(window.ethereum)
+                    const signer = await provider.getSigner()
+                    let contractAddress = "0x35bc8D3D5041383DCee24F9cC0053b7F24c906F1";
+                    let ABI = [
+                        "function number() external view returns (uint256)",
+                        "function setNumber(uint256 number) external",
+                        "function increment() external",
+                        "function decrement() external"
+                    ]
+                    contract = new ethers.Contract(contractAddress, ABI, signer)
+                    ui.decrement.addEventListener("click", Decrement)
+                    ui.increment.addEventListener("click", Increment)
+                    ui.update.addEventListener("click", Update)
+                    ui.save.addEventListener("click", Set)
+
+                    Update();
+                } catch (error) {
+                    ui.status.innerHTML = "Disconnected"
+                }
+
+            }
+        }
+
+
+
+        async function Increment() {
+            ui.status.innerHTML = "Connected";
+            try {
+                const number = await contract.increment()
+                alert("It will take about 10 seconds to reflect accross the blockchain")
+            } catch (error) {
+                ui.status.innerHTML = "Please try again"
+            }
+        }
+
+        async function Decrement() {
+            ui.status.innerHTML = "Connected";
+            try {
+                const number = await contract.increment()
+                alert("It will take about 10 seconds to reflect accross the blockchain")
+            } catch (error) {
+                ui.status.innerHTML = "Please try again"
+            }
+        }
+
+        async function Set() {
+            ui.status.innerHTML = "Connected";
+            try {
+                const tx = await contract.setNumber(BigInt(ui.text.value))
+                await tx.wait()
+                Update()
+                alert("Updated!")
+            } catch (error) {
+                console.log(error)
+                ui.status.innerHTML = "Please try again"
+            }
+        }
+        Init()
+        // Your code here...
+    </script>
+</body>
+
+</html>
